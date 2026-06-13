@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Open.Music Composer</title>
+<style>
+:root{
+  --paper:#fffdf1;
+  --ink:#151515;
+  --gray:#ece9df;
+  --dark:#2c2c2c;
+  --red:#a83232;
+  --mustard:#d7a21e;
+  --green:#2e8b57;
+  --blue:#315c8f;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Courier New", monospace;
+  background: radial-gradient(circle at 10% 10%, #fff8d2 0 7%, transparent 8%), var(--gray);
+  color:var(--ink);
+  image-rendering: pixelated;
+}
+header{
+  background:var(--dark);
+  color:var(--paper);
+  border-bottom:8px solid var(--mustard);
+  padding:18px 14px;
+  text-align:center;
+}
+h1{margin:0;font-size:clamp(30px,7vw,58px);letter-spacing:2px;text-shadow:3px 3px 0 var(--red)}
+.subtitle{margin-top:6px;color:#f7d77a;font-weight:bold}
+.app{max-width:1100px;margin:auto;padding:14px;display:grid;gap:14px}
+.panel{
+  background:var(--paper);
+  border:4px solid var(--ink);
+  box-shadow:8px 8px 0 var(--dark);
+  padding:14px;
+}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+button{
+  font-family:inherit;font-weight:bold;font-size:16px;
+  border:3px solid var(--ink);background:white;color:var(--ink);
+  padding:10px 12px;margin:4px;cursor:pointer;box-shadow:4px 4px 0 var(--dark);
+}
+button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--dark)}
+button.selected{background:var(--mustard)}
+button.good{background:var(--green);color:white}
+button.danger{background:var(--red);color:white}
+.staffWrap{overflow-x:auto;background:#fff;border:3px solid var(--ink);padding:10px}
+svg{min-width:940px;width:100%;height:330px;background:#fffdf7}
+.noteBtn{font-size:22px;min-width:58px}.small{font-size:13px;color:#555}.score{font-size:22px;font-weight:bold;color:var(--green)}
+.feedback{line-height:1.45;font-weight:bold}.mascot{display:flex;gap:14px;align-items:center}.nerd{width:92px;height:92px;border:4px solid var(--ink);background:#eee;position:relative;box-shadow:5px 5px 0 var(--mustard);clip-path:polygon(15% 0,100% 0,88% 78%,55% 78%,42% 100%,38% 78%,0 78%)}
+.nerd:before,.nerd:after{content:"";position:absolute;top:27px;width:18px;height:18px;background:white;border:3px solid var(--ink);border-radius:50%}.nerd:before{left:18px}.nerd:after{left:50px}.mouth{position:absolute;left:30px;top:58px;width:32px;border-top:4px solid var(--red)}
+.pixelDots{background-image:radial-gradient(var(--red) 1px, transparent 1px);background-size:6px 6px}
+@media(max-width:760px){.controls{grid-template-columns:1fr}button{font-size:15px}svg{min-width:820px}}
+</style>
+</head>
+<body>
+<header class="pixelDots">
+  <h1>Open.Music</h1>
+  <div class="subtitle">Composer Trail • BAG Notes • 4/4 Measures</div>
+</header>
+<main class="app">
+  <section class="panel mascot">
+    <div class="nerd"><div class="mouth"></div></div>
+    <div>
+      <h2>Music Nerd says:</h2>
+      <div id="nerdText" class="feedback">Choose a rhythm, then choose B, A, or G. Try to make each measure equal 4 beats.</div>
+    </div>
+  </section>
+  <section class="panel controls">
+    <div>
+      <h2>1. Pick Rhythm</h2>
+      <button data-rhythm="q" class="selected">♩ Quarter = 1</button>
+      <button data-rhythm="h">𝅗𝅥 Half = 2</button>
+      <button data-rhythm="w">𝅝 Whole = 4</button>
+      <button data-rhythm="e">♫ Eighth Pair = 1</button>
+    </div>
+    <div>
+      <h2>2. Add Note</h2>
+      <button class="noteBtn" data-note="B">B</button>
+      <button class="noteBtn" data-note="A">A</button>
+      <button class="noteBtn" data-note="G">G</button>
+      <br>
+      <button id="play" class="good">▶ Play</button>
+      <button id="undo">↶ Undo</button>
+      <button id="clear" class="danger">Clear</button>
+      <button id="save">Save</button>
+      <button id="load">Load</button>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Your Composition <span class="score" id="score">Score: 0</span></h2>
+    <div class="small">Treble clef guide: G sits on the 2nd line, A in the space above it, B on the middle line.</div>
+    <div class="staffWrap"><svg id="staff" viewBox="0 0 940 330" aria-label="music staff"></svg></div>
+  </section>
+  <section class="panel">
+    <h2>Teacher Feedback</h2>
+    <div id="feedback" class="feedback">No notes yet. Begin your journey.</div>
+  </section>
+</main>
+<script>
+const svg=document.getElementById('staff');
+const feedback=document.getElementById('feedback');
+const nerdText=document.getElementById('nerdText');
+const scoreEl=document.getElementById('score');
+let selectedRhythm='q';
+let comp=[];
+const rhythmInfo={q:{beats:1,label:'♩'},h:{beats:2,label:'𝅗𝅥'},w:{beats:4,label:'𝅝'},e:{beats:1,label:'♫'}};
+const noteY={B:126,A:144,G:162}; // accurate treble clef: B middle line, A space, G second line
+const freq={G:392,A:440,B:493.88};
+document.querySelectorAll('[data-rhythm]').forEach(b=>b.onclick=()=>{selectedRhythm=b.dataset.rhythm;document.querySelectorAll('[data-rhythm]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');});
+document.querySelectorAll('[data-note]').forEach(b=>b.onclick=()=>{comp.push({note:b.dataset.note,rhythm:selectedRhythm});draw();});
+document.getElementById('undo').onclick=()=>{comp.pop();draw();};
+document.getElementById('clear').onclick=()=>{comp=[];draw();};
+document.getElementById('save').onclick=()=>{localStorage.setItem('openMusicComp',JSON.stringify(comp));nerdText.textContent='Saved! Your wagon of notes is safe.';};
+document.getElementById('load').onclick=()=>{comp=JSON.parse(localStorage.getItem('openMusicComp')||'[]');draw();};
+document.getElementById('play').onclick=play;
+function el(name,attrs){let n=document.createElementNS('http://www.w3.org/2000/svg',name);for(let k in attrs)n.setAttribute(k,attrs[k]);return n;}
+function draw(){svg.innerHTML='';
+  svg.appendChild(el('rect',{x:0,y:0,width:940,height:330,fill:'#fffdf7'}));
+  for(let i=0;i<5;i++) svg.appendChild(el('line',{x1:80,y1:90+i*18,x2:890,y2:90+i*18,stroke:'#151515','stroke-width':3}));
+  svg.appendChild(el('text',{x:22,y:154,'font-size':78,'font-family':'serif',fill:'#151515'})).textContent='𝄞';
+  for(let x=260;x<=860;x+=200) svg.appendChild(el('line',{x1:x,y1:90,x2:x,y2:162,stroke:'#151515','stroke-width':3}));
+  let x=105;
+  comp.forEach((n,i)=>{let y=noteY[n.note], r=rhythmInfo[n.rhythm];
+    svg.appendChild(el('ellipse',{cx:x,cy:y,rx:13,ry:9,fill:n.rhythm==='h'||n.rhythm==='w'?'white':'#151515',stroke:'#151515','stroke-width':3,transform:`rotate(-18 ${x} ${y})`}));
+    if(n.rhythm!=='w') svg.appendChild(el('line',{x1:x+11,y1:y,x2:x+11,y2:y-58,stroke:'#151515','stroke-width':3}));
+    if(n.rhythm==='e'){svg.appendChild(el('line',{x1:x+11,y1:y-58,x2:x+35,y2:y-58,stroke:'#151515','stroke-width':6}));svg.appendChild(el('ellipse',{cx:x+38,cy:y,rx:13,ry:9,fill:'#151515',stroke:'#151515','stroke-width':3,transform:`rotate(-18 ${x+38} ${y})`}));svg.appendChild(el('line',{x1:x+49,y1:y,x2:x+49,y2:y-58,stroke:'#151515','stroke-width':3}));}
+    svg.appendChild(el('text',{x:x-5,y:222,'font-size':22,'font-family':'Courier New',fill:'#a83232','font-weight':'bold'})).textContent=n.note;
+    svg.appendChild(el('text',{x:x-8,y:250,'font-size':20,'font-family':'Courier New',fill:'#315c8f'})).textContent=r.label;
+    x += n.rhythm==='e'?70:50;
+  });
+  analyze();
+}
+function analyze(){let measures=[],beats=0,complete=0,over=false;
+  comp.forEach(n=>{beats+=rhythmInfo[n.rhythm].beats;if(beats===4){complete++;measures.push(4);beats=0;}else if(beats>4){over=true;measures.push(beats);beats=0;}});
+  let variety=new Set(comp.map(n=>n.note)).size + new Set(comp.map(n=>n.rhythm)).size;
+  let score=Math.max(0, complete*25 + variety*6 - (over?25:0) - (beats?8:0));
+  scoreEl.textContent='Score: '+Math.min(score,100);
+  let msg='Measures complete: '+complete+'. Current measure beats: '+beats+'/4. ';
+  if(over) msg+='A measure overflowed. Try undoing or using shorter rhythms. ';
+  if(comp.length===0) msg='No notes yet. Begin your journey.';
+  else if(beats===0&&!over) msg+='Excellent wagon work: your last measure is complete.';
+  else msg+='Keep traveling until the measure reaches exactly 4 beats.';
+  feedback.textContent=msg;
+  nerdText.textContent= score>=80?'Gold star! Strong rhythm accuracy and variety.': msg;
+}
+async function play(){const AudioContext=window.AudioContext||window.webkitAudioContext;const ctx=new AudioContext();let t=ctx.currentTime;
+  for(const n of comp){let dur=rhythmInfo[n.rhythm].beats*0.35;let osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=freq[n.note];osc.type='square';gain.gain.setValueAtTime(0.0001,t);gain.gain.exponentialRampToValueAtTime(0.2,t+0.02);gain.gain.exponentialRampToValueAtTime(0.0001,t+dur);osc.connect(gain).connect(ctx.destination);osc.start(t);osc.stop(t+dur);t+=dur;}
+}
+draw();
+</script>
+</body>
+</html>
