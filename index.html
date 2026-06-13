@@ -3,82 +3,478 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MusicEd Composer v1</title>
+<title>Open.Music Composer v1.1</title>
 <style>
-:root{--bg:#f7f8fb;--card:#fff;--ink:#172033;--muted:#697386;--line:#d8dee9;--accent:#4f7cff;--accent-soft:#dce6ff;--measure:#95a1b8}
+:root{
+  --bg:#F2F2F0;
+  --panel:#FFFFFF;
+  --ink:#1C1C1C;
+  --muted:#696969;
+  --line:#C9C6C1;
+  --red:#B23A2B;
+  --red-dark:#83281F;
+  --mustard:#D4A017;
+  --mustard-soft:#F5E6B8;
+  --green:#2E8B57;
+  --gray:#999999;
+  --soft:#F8F7F3;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-.app{max-width:1280px;margin:0 auto;padding:18px}
-h1{margin:0;font-size:clamp(1.8rem,4vw,3.2rem);letter-spacing:-.05em}
-.subtitle{color:var(--muted);margin-top:4px;font-weight:600}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 30px rgba(20,30,60,.08);padding:14px;margin-bottom:14px}
-.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-button,select,input{font:inherit;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:white;color:var(--ink)}
-button{cursor:pointer;font-weight:750}
-button.primary{background:var(--accent);color:white;border-color:var(--accent)}
-button.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-label{display:inline-flex;gap:6px;align-items:center;font-weight:650;color:var(--muted)}
-.note{color:var(--muted);line-height:1.4;font-weight:600}
-.measure-numbers{display:grid;grid-template-columns:repeat(8,272px);margin-left:70px;min-width:2176px;color:var(--muted);font-size:.85rem;font-weight:800}
-.measure-numbers div{padding:6px 0 8px 6px;border-left:3px solid var(--measure)}
-.composer{display:grid;grid-template-columns:70px 1fr;overflow:auto;border-radius:18px;border:1px solid var(--line);background:white}
-.pitch-labels{position:sticky;left:0;z-index:5;background:white;border-right:2px solid var(--line)}
-.pitch-label,.cell{height:42px}
-.pitch-label{display:flex;align-items:center;justify-content:center;font-weight:800;border-bottom:1px solid var(--line);color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(64,34px);grid-template-rows:repeat(8,42px);position:relative}
-.cell{border-right:1px solid #edf0f5;border-bottom:1px solid var(--line);background:white;cursor:pointer;touch-action:manipulation;position:relative}
-.cell:hover{background:#e8efff}
-.cell.on::after{content:"";position:absolute;inset:7px;border-radius:12px;background:var(--accent);box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
-.cell.playing{background:#fff4c2}
-.cell.measure-start{border-left:3px solid var(--measure)}
-.status{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-weight:700;margin-top:10px}
-.pill{background:#eef2f7;padding:8px 10px;border-radius:999px}
-.staff-area{overflow-x:auto;padding:8px}
-canvas{background:white;border-radius:14px;border:1px solid var(--line);min-width:1000px}
-@media(max-width:700px){.app{padding:10px}.grid{grid-template-columns:repeat(64,38px)}.measure-numbers{grid-template-columns:repeat(8,304px);min-width:2432px}.cell,.pitch-label{height:46px}}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.app{
+  max-width:1320px;
+  margin:0 auto;
+  padding:18px;
+}
+.brand{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:14px;
+}
+h1{
+  margin:0;
+  font-size:clamp(2rem,5vw,4rem);
+  letter-spacing:-.07em;
+}
+.open{color:var(--ink)}
+.music{color:var(--red)}
+.subtitle{
+  color:var(--muted);
+  margin-top:4px;
+  font-weight:700;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:0 10px 24px rgba(0,0,0,.07);
+  padding:14px;
+  margin-bottom:14px;
+}
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+button,select,input{
+  font:inherit;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+  background:white;
+  color:var(--ink);
+}
+button{
+  cursor:pointer;
+  font-weight:800;
+}
+button.primary{
+  background:var(--red);
+  color:white;
+  border-color:var(--red);
+}
+button.primary:hover{background:var(--red-dark)}
+button.active{
+  background:var(--mustard-soft);
+  border-color:var(--mustard);
+}
+button.rhythm{
+  min-width:78px;
+}
+button.rhythm.active{
+  background:var(--red);
+  color:white;
+  border-color:var(--red);
+}
+label{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  font-weight:700;
+  color:var(--muted);
+}
+.note{
+  color:var(--muted);
+  line-height:1.45;
+  font-weight:650;
+}
+.measure-numbers{
+  display:grid;
+  grid-template-columns:repeat(8,304px);
+  margin-left:76px;
+  min-width:2432px;
+  color:var(--muted);
+  font-size:.85rem;
+  font-weight:900;
+}
+.measure-numbers div{
+  padding:6px 0 8px 8px;
+  border-left:3px solid var(--gray);
+}
+.composer{
+  display:grid;
+  grid-template-columns:76px 1fr;
+  overflow:auto;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:white;
+}
+.pitch-labels{
+  position:sticky;
+  left:0;
+  z-index:5;
+  background:white;
+  border-right:2px solid var(--line);
+}
+.pitch-label,.cell{height:46px}
+.pitch-label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(64,38px);
+  grid-template-rows:repeat(8,46px);
+  position:relative;
+}
+.cell{
+  border-right:1px solid #ECE9E2;
+  border-bottom:1px solid var(--line);
+  background:white;
+  cursor:pointer;
+  touch-action:manipulation;
+  position:relative;
+}
+.cell:hover{background:#FAF1DC}
+.cell.on::after{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:10px;
+  background:var(--red);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);
+}
+.cell.playing{
+  background:var(--mustard);
+}
+.cell.measure-start{
+  border-left:3px solid var(--gray);
+}
+.status{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  color:var(--muted);
+  font-weight:800;
+  margin-top:10px;
+}
+.pill{
+  background:var(--soft);
+  border:1px solid var(--line);
+  padding:8px 10px;
+  border-radius:999px;
+}
+.staff-area{
+  overflow-x:auto;
+  padding:8px;
+}
+canvas{
+  background:white;
+  border-radius:14px;
+  border:1px solid var(--line);
+  min-width:1000px;
+}
+.nerd{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  z-index:20;
+}
+.nerd-character{
+  width:58px;
+  height:92px;
+  border:4px solid var(--ink);
+  border-radius:30px 30px 22px 22px;
+  background:white;
+  transform:rotate(-10deg);
+  position:relative;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+.nerd-character:before,.nerd-character:after{
+  content:"";
+  position:absolute;
+  top:24px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--ink);
+}
+.nerd-character:before{left:15px}
+.nerd-character:after{right:15px}
+.nerd-smile{
+  position:absolute;
+  width:24px;
+  height:12px;
+  left:15px;
+  top:46px;
+  border-bottom:3px solid var(--ink);
+  border-radius:0 0 20px 20px;
+}
+.nerd-bubble{
+  max-width:290px;
+  background:var(--mustard-soft);
+  border:2px solid var(--mustard);
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 8px 18px rgba(0,0,0,.15);
+}
+.nerd-bubble h3{
+  margin:0 0 5px;
+  font-size:1rem;
+}
+.nerd-bubble p{
+  margin:0;
+  color:#332600;
+  font-weight:650;
+  line-height:1.35;
+}
+.nerd-close{
+  float:right;
+  border:0;
+  background:transparent;
+  padding:0 0 0 8px;
+  font-size:1rem;
+}
+.hidden{display:none}
+@media(max-width:700px){
+  .app{padding:10px}
+  .brand{display:block}
+  .controls{gap:8px}
+  button,select,input{padding:9px 10px}
+}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="panel"><h1>MusicEd Composer</h1><div class="subtitle">Grid-to-notation composition bridge · Stage 1</div></header>
-<section class="panel">
-<div class="controls">
-<button id="playBtn" class="primary">▶ Play</button><button id="stopBtn">■ Stop</button><button id="clearBtn">Clear</button>
-<button id="loopBtn">Loop: Off</button><button id="harmonyBtn" class="active">Harmony Mode: On</button>
-<label>Tempo <input id="tempoInput" type="number" min="50" max="200" value="100" /></label>
-<label>Sound <select id="soundSelect">
-<option value="piano">Piano-ish</option><option value="synth">Synth</option><option value="bass">Bass</option><option value="bell">Bell</option><option value="drum">Drum</option><option value="weird">Weird/Fun</option><option value="sine">Sine</option><option value="triangle">Triangle</option><option value="sawtooth">Saw</option><option value="square">Square</option>
-</select></label>
+  <header class="panel brand">
+    <div>
+      <h1><span class="open">Open</span><span class="music">.Music</span></h1>
+      <div class="subtitle">Composer · grid-to-notation music learning lab</div>
+    </div>
+    <button id="nerdBtn">🤓 Music Nerd</button>
+  </header>
+
+  <section class="panel">
+    <div class="controls">
+      <button id="playBtn" class="primary">▶ Play</button>
+      <button id="stopBtn">■ Stop</button>
+      <button id="clearBtn">Clear</button>
+      <button id="loopBtn">Loop: Off</button>
+      <button id="harmonyBtn" class="active">Harmony Mode: On</button>
+
+      <label>Tempo
+        <input id="tempoInput" type="number" min="50" max="200" value="100" />
+      </label>
+
+      <label>Sound
+        <select id="soundSelect">
+          <option value="piano">Piano-ish</option>
+          <option value="synth">Synth</option>
+          <option value="bass">Bass</option>
+          <option value="bell">Bell</option>
+          <option value="drum">Drum</option>
+          <option value="weird">Weird/Fun</option>
+          <option value="sine">Sine</option>
+          <option value="triangle">Triangle</option>
+          <option value="sawtooth">Saw</option>
+          <option value="square">Square</option>
+        </select>
+      </label>
+    </div>
+    <p class="note">Choose a rhythm, then tap the grid. The red grid shape becomes black notation on the staff.</p>
+  </section>
+
+  <section class="panel">
+    <div class="controls" id="rhythmControls">
+      <strong>Rhythm Tool:</strong>
+      <button class="rhythm active" data-slots="1" data-kind="note">♪ Eighth</button>
+      <button class="rhythm" data-slots="2" data-kind="note">♩ Quarter</button>
+      <button class="rhythm" data-slots="4" data-kind="note">𝅗𝅥 Half</button>
+      <button class="rhythm" data-slots="8" data-kind="note">𝅝 Whole</button>
+      <button class="rhythm" data-slots="1" data-kind="rest">𝄾 8th Rest</button>
+      <button class="rhythm" data-slots="2" data-kind="rest">𝄽 Q Rest</button>
+      <button class="rhythm" data-slots="4" data-kind="rest">Half Rest</button>
+      <button class="rhythm" data-slots="8" data-kind="rest">Whole Rest</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="measure-numbers" id="measureNumbers"></div>
+    <div class="composer">
+      <div class="pitch-labels" id="pitchLabels"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="status">
+      <span class="pill">4/4</span>
+      <span class="pill">8 measures</span>
+      <span class="pill">64 eighth-note slots</span>
+      <span class="pill">Range: Middle C to C5</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 style="margin:0 0 10px">Staff Translation</h2>
+    <div class="staff-area">
+      <canvas id="staffCanvas" width="2200" height="310"></canvas>
+    </div>
+  </section>
 </div>
-<p class="note">Tap squares to compose. Each column is one eighth-note slot. The staff below translates the grid into treble-clef noteheads.</p>
-</section>
-<section class="panel"><div class="measure-numbers" id="measureNumbers"></div><div class="composer"><div class="pitch-labels" id="pitchLabels"></div><div class="grid" id="grid"></div></div><div class="status"><span class="pill">4/4</span><span class="pill">8 measures</span><span class="pill">64 eighth-note slots</span><span class="pill">Range: Middle C to C5</span></div></section>
-<section class="panel"><h2 style="margin:0 0 10px">Staff Translation</h2><div class="staff-area"><canvas id="staffCanvas" width="2200" height="300"></canvas></div></section>
+
+<div id="nerdPopup" class="nerd hidden">
+  <div class="nerd-bubble">
+    <button class="nerd-close" id="nerdClose">✕</button>
+    <h3>🤓 Music Nerd</h3>
+    <p>I’m here to explain chords, Roman numerals, jazz labels, and why “that square became that note.” Harmony analysis is coming soon.</p>
+  </div>
+  <div class="nerd-character"><div class="nerd-smile"></div></div>
 </div>
+
 <script>
-const pitches=[{name:"C5",midi:72},{name:"B4",midi:71},{name:"A4",midi:69},{name:"G4",midi:67},{name:"F4",midi:65},{name:"E4",midi:64},{name:"D4",midi:62},{name:"C4",midi:60}];
+const pitches=[
+  {name:"C5",midi:72},{name:"B4",midi:71},{name:"A4",midi:69},{name:"G4",midi:67},
+  {name:"F4",midi:65},{name:"E4",midi:64},{name:"D4",midi:62},{name:"C4",midi:60}
+];
 const columns=64,rows=pitches.length;
 let gridData=Array.from({length:rows},()=>Array(columns).fill(false));
 let audioContext=null,isPlaying=false,loop=false,harmonyMode=true,playTimer=null,currentCol=-1;
+let selectedSlots=1,selectedKind="note";
 const grid=document.getElementById("grid"),pitchLabels=document.getElementById("pitchLabels"),measureNumbers=document.getElementById("measureNumbers"),canvas=document.getElementById("staffCanvas"),ctx=canvas.getContext("2d");
+
 function midiToFrequency(midi){return 440*Math.pow(2,(midi-69)/12)}
 function ensureAudio(){const A=window.AudioContext||window.webkitAudioContext;if(!audioContext)audioContext=new A();if(audioContext.state==="suspended")audioContext.resume()}
-function playTone(midi,duration,sound){ensureAudio();const now=audioContext.currentTime,freq=midiToFrequency(midi),osc=audioContext.createOscillator(),gain=audioContext.createGain();let type="sine";if(sound==="piano")type="triangle";if(sound==="synth")type="sawtooth";if(sound==="bass")type="square";if(sound==="bell")type="sine";if(sound==="weird")type="sawtooth";if(["sine","triangle","sawtooth","square"].includes(sound))type=sound;osc.type=type;osc.frequency.value=sound==="bass"?freq/2:freq;gain.gain.setValueAtTime(.0001,now);if(sound==="bell"){gain.gain.exponentialRampToValueAtTime(.25,now+.01);gain.gain.exponentialRampToValueAtTime(.0001,now+duration*1.7)}else if(sound==="drum"){osc.type="triangle";osc.frequency.setValueAtTime(160,now);osc.frequency.exponentialRampToValueAtTime(55,now+.12);gain.gain.exponentialRampToValueAtTime(.45,now+.01);gain.gain.exponentialRampToValueAtTime(.0001,now+.16)}else{gain.gain.exponentialRampToValueAtTime(.22,now+.015);gain.gain.exponentialRampToValueAtTime(.0001,now+Math.max(.08,duration*.9))}osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+duration*1.8)}
-function buildGrid(){pitches.forEach(p=>{const label=document.createElement("div");label.className="pitch-label";label.textContent=p.name;pitchLabels.appendChild(label)});for(let m=1;m<=8;m++){const div=document.createElement("div");div.textContent="Measure "+m;measureNumbers.appendChild(div)}for(let r=0;r<rows;r++){for(let c=0;c<columns;c++){const cell=document.createElement("div");cell.className="cell";if(c%8===0)cell.classList.add("measure-start");cell.dataset.row=r;cell.dataset.col=c;cell.title=pitches[r].name+" · slot "+(c+1);cell.addEventListener("pointerdown",e=>{e.preventDefault();toggleCell(r,c)});grid.appendChild(cell)}}}
-function toggleCell(row,col){if(!harmonyMode){for(let r=0;r<rows;r++)gridData[r][col]=false}gridData[row][col]=!gridData[row][col];renderGrid();drawStaff();playTone(pitches[row].midi,.18,document.getElementById("soundSelect").value)}
-function renderGrid(){document.querySelectorAll(".cell").forEach(cell=>{const r=Number(cell.dataset.row),c=Number(cell.dataset.col);cell.classList.toggle("on",gridData[r][c]);cell.classList.toggle("playing",c===currentCol&&isPlaying)})}
+function playTone(midi,duration,sound){
+  ensureAudio();
+  const now=audioContext.currentTime,freq=midiToFrequency(midi),osc=audioContext.createOscillator(),gain=audioContext.createGain();
+  let type="sine";
+  if(sound==="piano")type="triangle"; if(sound==="synth")type="sawtooth"; if(sound==="bass")type="square";
+  if(sound==="bell")type="sine"; if(sound==="weird")type="sawtooth"; if(["sine","triangle","sawtooth","square"].includes(sound))type=sound;
+  osc.type=type; osc.frequency.value=sound==="bass"?freq/2:freq;
+  gain.gain.setValueAtTime(.0001,now);
+  if(sound==="bell"){gain.gain.exponentialRampToValueAtTime(.25,now+.01);gain.gain.exponentialRampToValueAtTime(.0001,now+duration*1.8)}
+  else if(sound==="drum"){osc.type="triangle";osc.frequency.setValueAtTime(160,now);osc.frequency.exponentialRampToValueAtTime(55,now+.12);gain.gain.exponentialRampToValueAtTime(.45,now+.01);gain.gain.exponentialRampToValueAtTime(.0001,now+.16)}
+  else{gain.gain.exponentialRampToValueAtTime(.22,now+.015);gain.gain.exponentialRampToValueAtTime(.0001,now+Math.max(.08,duration*.9))}
+  osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+duration*1.8);
+}
+function buildGrid(){
+  pitches.forEach(p=>{const label=document.createElement("div");label.className="pitch-label";label.textContent=p.name;pitchLabels.appendChild(label)});
+  for(let m=1;m<=8;m++){const div=document.createElement("div");div.textContent="Measure "+m;measureNumbers.appendChild(div)}
+  for(let r=0;r<rows;r++)for(let c=0;c<columns;c++){
+    const cell=document.createElement("div");cell.className="cell";if(c%8===0)cell.classList.add("measure-start");
+    cell.dataset.row=r;cell.dataset.col=c;cell.title=pitches[r].name+" · slot "+(c+1);
+    cell.addEventListener("pointerdown",e=>{e.preventDefault();applyTool(r,c)});
+    grid.appendChild(cell);
+  }
+}
+function clearRange(col,slots){
+  for(let c=col;c<Math.min(columns,col+slots);c++)for(let r=0;r<rows;r++)gridData[r][c]=false;
+}
+function applyTool(row,col){
+  const slots=Math.min(selectedSlots,columns-col);
+  if(selectedKind==="rest"){
+    clearRange(col,slots);
+  } else {
+    if(!harmonyMode) clearRange(col,slots);
+    for(let c=col;c<col+slots;c++) gridData[row][c]=true;
+    playTone(pitches[row].midi,stepDurationSeconds()*slots,document.getElementById("soundSelect").value);
+  }
+  renderGrid();drawStaff();checkHarmonyPopup(col);
+}
+function renderGrid(){
+  document.querySelectorAll(".cell").forEach(cell=>{
+    const r=Number(cell.dataset.row),c=Number(cell.dataset.col);
+    cell.classList.toggle("on",gridData[r][c]);
+    cell.classList.toggle("playing",c===currentCol&&isPlaying);
+  });
+}
 function stepDurationSeconds(){const bpm=Number(document.getElementById("tempoInput").value)||100;return 60/bpm/2}
-function playColumn(col){const sound=document.getElementById("soundSelect").value,dur=stepDurationSeconds();for(let r=0;r<rows;r++)if(gridData[r][col])playTone(pitches[r].midi,dur,sound)}
-function startPlayback(){if(isPlaying)return;ensureAudio();isPlaying=true;currentCol=0;function tick(){if(!isPlaying)return;playColumn(currentCol);renderGrid();currentCol++;if(currentCol>=columns){if(loop){currentCol=0}else{stopPlayback();return}}playTimer=setTimeout(tick,stepDurationSeconds()*1000)}tick()}
+function playColumn(col){
+  const sound=document.getElementById("soundSelect").value,dur=stepDurationSeconds();
+  for(let r=0;r<rows;r++)if(gridData[r][col])playTone(pitches[r].midi,dur,sound);
+}
+function startPlayback(){
+  if(isPlaying)return;ensureAudio();isPlaying=true;currentCol=0;
+  function tick(){
+    if(!isPlaying)return;
+    playColumn(currentCol);renderGrid();currentCol++;
+    if(currentCol>=columns){if(loop){currentCol=0}else{stopPlayback();return}}
+    playTimer=setTimeout(tick,stepDurationSeconds()*1000);
+  }
+  tick();
+}
 function stopPlayback(){isPlaying=false;currentCol=-1;if(playTimer)clearTimeout(playTimer);playTimer=null;renderGrid()}
-function drawStaff(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);const left=70,top=82,lineGap=16,staffWidth=2050,slotW=staffWidth/columns;ctx.strokeStyle="#222";ctx.lineWidth=1.5;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(left,top+i*lineGap);ctx.lineTo(left+staffWidth,top+i*lineGap);ctx.stroke()}ctx.lineWidth=1;for(let m=0;m<=8;m++){const x=left+m*slotW*8;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+4*lineGap);ctx.stroke();if(m<8){ctx.fillStyle="#697386";ctx.font="bold 12px system-ui";ctx.fillText(String(m+1),x+6,top-18)}}ctx.font="bold 52px serif";ctx.fillStyle="#222";ctx.fillText("𝄞",20,top+56);
-const yMap={"C5":top+lineGap*1.5,"B4":top+lineGap*2,"A4":top+lineGap*2.5,"G4":top+lineGap*3,"F4":top+lineGap*3.5,"E4":top+lineGap*4,"D4":top+lineGap*4.5,"C4":top+lineGap*5};
-for(let c=0;c<columns;c++){for(let r=0;r<rows;r++){if(!gridData[r][c])continue;const x=left+c*slotW+slotW/2,y=yMap[pitches[r].name];ctx.fillStyle="#4f7cff";ctx.strokeStyle="#172033";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,8,6,-.35,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(x+8,y);ctx.lineTo(x+8,y-36);ctx.stroke();if(pitches[r].name==="C4"){ctx.beginPath();ctx.moveTo(x-14,y);ctx.lineTo(x+14,y);ctx.stroke()}}}ctx.fillStyle="#697386";ctx.font="bold 14px system-ui";ctx.fillText("Corrected treble staff: E4 bottom line, G4 second line, B4 middle line, C4 ledger line.",left,260)}
+function drawStaff(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+  const left=70,top=86,lineGap=16,staffWidth=2050,slotW=staffWidth/columns;
+  ctx.strokeStyle="#000";ctx.lineWidth=1.5;
+  for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(left,top+i*lineGap);ctx.lineTo(left+staffWidth,top+i*lineGap);ctx.stroke()}
+  ctx.lineWidth=1;
+  for(let m=0;m<=8;m++){
+    const x=left+m*slotW*8;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+4*lineGap);ctx.stroke();
+    if(m<8){ctx.fillStyle="#696969";ctx.font="bold 12px system-ui";ctx.fillText(String(m+1),x+6,top-18)}
+  }
+  ctx.font="bold 52px serif";ctx.fillStyle="#000";ctx.fillText("𝄞",20,top+56);
+  const yMap={"C5":top+lineGap*1.5,"B4":top+lineGap*2,"A4":top+lineGap*2.5,"G4":top+lineGap*3,"F4":top+lineGap*3.5,"E4":top+lineGap*4,"D4":top+lineGap*4.5,"C4":top+lineGap*5};
+  for(let c=0;c<columns;c++){
+    for(let r=0;r<rows;r++){
+      if(!gridData[r][c])continue;
+      const x=left+c*slotW+slotW/2,y=yMap[pitches[r].name];
+      ctx.fillStyle="#000";ctx.strokeStyle="#000";ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(x,y,8,6,-.35,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+8,y);ctx.lineTo(x+8,y-36);ctx.stroke();
+      if(pitches[r].name==="C4"){ctx.beginPath();ctx.moveTo(x-14,y);ctx.lineTo(x+14,y);ctx.stroke()}
+    }
+  }
+  ctx.fillStyle="#696969";ctx.font="bold 14px system-ui";
+  ctx.fillText("Stage 1.1: rhythm tool changes grid duration; full rhythm grouping and rests on staff come next.",left,270);
+}
+function checkHarmonyPopup(col){
+  let count=0;for(let r=0;r<rows;r++)if(gridData[r][col])count++;
+  if(count>=3){
+    const popup=document.getElementById("nerdPopup");
+    popup.classList.remove("hidden");
+    popup.querySelector("p").textContent="I detected a harmony! Soon I’ll identify the chord, Roman numeral, jazz label, and tension level.";
+  }
+}
+document.querySelectorAll(".rhythm").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".rhythm").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedSlots=Number(btn.dataset.slots);
+    selectedKind=btn.dataset.kind;
+  });
+});
 document.getElementById("playBtn").addEventListener("click",startPlayback);
 document.getElementById("stopBtn").addEventListener("click",stopPlayback);
 document.getElementById("clearBtn").addEventListener("click",()=>{stopPlayback();gridData=Array.from({length:rows},()=>Array(columns).fill(false));renderGrid();drawStaff()});
 document.getElementById("loopBtn").addEventListener("click",e=>{loop=!loop;e.target.textContent=loop?"Loop: On":"Loop: Off";e.target.classList.toggle("active",loop)});
 document.getElementById("harmonyBtn").addEventListener("click",e=>{harmonyMode=!harmonyMode;e.target.textContent=harmonyMode?"Harmony Mode: On":"Melody Mode: On";e.target.classList.toggle("active",harmonyMode)});
+document.getElementById("nerdBtn").addEventListener("click",()=>document.getElementById("nerdPopup").classList.toggle("hidden"));
+document.getElementById("nerdClose").addEventListener("click",()=>document.getElementById("nerdPopup").classList.add("hidden"));
 buildGrid();renderGrid();drawStaff();
 </script>
 </body>
