@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Open.Music Composer</title>
+  <style>
+    :root{
+      --bg:#111827;
+      --bg2:#1e1b4b;
+      --panel:#f8fafc;
+      --panel2:#e5e7eb;
+      --ink:#111827;
+      --muted:#64748b;
+      --accent:#8b5cf6;
+      --accent2:#38bdf8;
+      --gold:#f4b942;
+      --good:#22c55e;
+      --danger:#ef4444;
+      --staff:#111827;
+      --note:#111827;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:white;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(139,92,246,.35), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(56,189,248,.25), transparent 28%),
+        linear-gradient(135deg,var(--bg),var(--bg2));
+    }
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      padding:18px 22px 10px;
+    }
+
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:46px;height:46px;border-radius:16px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      display:grid;place-items:center;font-size:28px;font-weight:900;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+    }
+    h1{font-size:clamp(1.6rem,4vw,2.8rem);margin:0;letter-spacing:-.04em}
+    .tag{color:#cbd5e1;margin-top:2px;font-size:.95rem}
+
+    .top-actions{display:flex;gap:10px;align-items:center}
+    button, select{
+      border:0;border-radius:14px;padding:11px 14px;font-weight:800;
+      background:white;color:var(--ink);cursor:pointer;
+      box-shadow:0 7px 18px rgba(0,0,0,.14);
+    }
+    button:hover{transform:translateY(-1px)}
+    button.active{background:var(--gold)}
+    button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
+    button.good{background:var(--good);color:white}
+    button.danger{background:var(--danger);color:white}
+    .gear{font-size:20px;width:46px;height:46px;padding:0;border-radius:50%}
+
+    main{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;padding:12px 22px 22px}
+    .card{background:rgba(255,255,255,.92);color:var(--ink);border-radius:24px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.24)}
+
+    .nerd-wrap{text-align:center}
+    .nerd{
+      width:150px;height:150px;margin:0 auto 12px;border-radius:34px;
+      background:linear-gradient(180deg,#fff,#e0f2fe);
+      border:5px solid #111827;position:relative;box-shadow:inset 0 -10px 0 rgba(139,92,246,.12);
+    }
+    .eye{position:absolute;top:47px;width:36px;height:44px;border:4px solid #111827;border-radius:50% 50% 45% 45%;background:white}
+    .eye.left{left:31px}.eye.right{right:31px}
+    .eye:after{content:"";position:absolute;left:12px;top:13px;width:12px;height:12px;border-radius:50%;background:#111827}
+    .stem{position:absolute;width:4px;height:28px;background:#111827;top:23px}
+    .stem.left{left:63px}.stem.right{right:31px}
+    .tie-smile{position:absolute;left:40px;bottom:36px;width:70px;height:28px;border-bottom:5px solid #111827;border-radius:0 0 80px 80px}
+    .hair{position:absolute;left:58px;top:-25px;font-size:32px;transform:rotate(-12deg)}
+    .bubble{background:white;border:3px solid #111827;border-radius:18px;padding:12px;text-align:left;min-height:96px}
+    .bubble h2{font-size:1.1rem;margin:.1rem 0 .4rem}.bubble p{margin:.25rem 0;color:#334155;line-height:1.3}
+
+    .toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+    .toolgrid button{box-shadow:none;background:#e5e7eb}.toolgrid button.active{background:var(--gold)}
+
+    .workspace{display:flex;flex-direction:column;gap:14px}
+    .bar{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+    .staff-card{padding:18px;overflow:auto}
+    svg{width:100%;min-width:860px;height:360px;background:#ffffff;border-radius:18px;border:3px solid #dbeafe;touch-action:manipulation}
+    .notehead{fill:var(--note);stroke:var(--note);stroke-width:2;cursor:pointer}
+    .notehead.half{fill:white}.stemline,.beam,.flag,.tie{stroke:var(--note);stroke-width:4;stroke-linecap:round;fill:none}.beam{stroke-width:8}.rest{font-size:26px;fill:var(--note);font-weight:900}.measure-line{stroke:#94a3b8;stroke-width:2}.staff-line{stroke:var(--staff);stroke-width:2}.cursor{stroke:var(--good);stroke-width:4;opacity:0;transition:x .08s linear}.cursor.playing{opacity:1}.ghost{opacity:.25;pointer-events:none}
+
+    .settings{display:none;position:fixed;right:22px;top:78px;width:min(330px,calc(100vw - 44px));z-index:10;background:white;color:var(--ink);border-radius:22px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .settings.open{display:block}.settings h2{margin:.1rem 0 1rem}.setting-row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0}.setting-row label{font-weight:800}.small{font-size:.82rem;color:var(--muted)}
+
+    @media(max-width:860px){main{grid-template-columns:1fr}header{align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">♪</div>
+    <div><h1>Open.Music</h1><div class="tag">A modern beginner composer for real notation.</div></div>
+  </div>
+  <div class="top-actions">
+    <button class="primary" id="playBtn">▶ Play</button>
+    <button id="stopBtn">■ Stop</button>
+    <button class="gear" id="gearBtn" aria-label="Settings">⚙️</button>
+  </div>
+</header>
+
+<main>
+  <aside class="card nerd-wrap">
+    <div class="nerd" aria-label="Music Nerd mascot">
+      <div class="hair">𝄞</div>
+      <div class="eye left"><div class="stem left"></div></div>
+      <div class="eye right"><div class="stem right"></div></div>
+      <div class="tie-smile"></div>
+    </div>
+    <div class="bubble" id="nerdBubble">
+      <h2>Select a rhythm</h2>
+      <p>Pick a note value, then click the staff. Notes sound when placed.</p>
+    </div>
+    <div class="toolgrid" id="toolGrid">
+      <button data-tool="quarter" class="active">♩ Quarter</button>
+      <button data-tool="eighth">♪ Eighth</button>
+      <button data-tool="half">𝅗𝅥 Half</button>
+      <button data-tool="whole">𝅝 Whole</button>
+      <button data-tool="rest">𝄽 Rest</button>
+      <button data-tool="tie">Tie</button>
+      <button data-tool="harmony">Harmony</button>
+      <button data-tool="erase">Erase</button>
+    </div>
+  </aside>
+
+  <section class="workspace">
+    <div class="card bar">
+      <strong>Pitch set:</strong>
+      <button data-pitch="B4" class="pitch active">B</button>
+      <button data-pitch="A4" class="pitch">A</button>
+      <button data-pitch="G4" class="pitch">G</button>
+      <span class="small">Click staff to place. Eighth notes auto-beam inside each beat group.</span>
+    </div>
+    <div class="card staff-card">
+      <svg id="score" viewBox="0 0 1120 360" role="img" aria-label="Music composition staff"></svg>
+    </div>
+  </section>
+</main>
+
+<div class="settings" id="settings">
+  <h2>Settings</h2>
+  <div class="setting-row"><label>Autoplay placed notes</label><input id="autoplay" type="checkbox" checked></div>
+  <div class="setting-row"><label>Metronome</label><input id="metronome" type="checkbox"></div>
+  <div class="setting-row"><label>Tempo</label><select id="tempo"><option>72</option><option selected>90</option><option>108</option><option>120</option></select></div>
+  <div class="setting-row"><label>Note names</label><input id="noteNames" type="checkbox" checked></div>
+  <div class="setting-row"><label>Beginner hints</label><input id="hints" type="checkbox" checked></div>
+  <p class="small">Nonessential functions live here so the main composer stays clean.</p>
+</div>
+
+<script>
+const svg = document.getElementById('score');
+const bubble = document.getElementById('nerdBubble');
+const NS = 'http://www.w3.org/2000/svg';
+const W = 1120, H = 360;
+const staffTop = 110, gap = 16, left = 80, measureW = 240, beatW = measureW/4, startX = left+42;
+let tool = 'quarter', pitch = 'B4', selectedForTie = null, playing = false, cursor;
+let notes = [
+  {id:crypto.randomUUID(), pitch:'B4', beat:0, dur:.5, voice:1},
+  {id:crypto.randomUUID(), pitch:'A4', beat:.5, dur:.5, voice:1},
+  {id:crypto.randomUUID(), pitch:'G4', beat:1, dur:.5, voice:1},
+  {id:crypto.randomUUID(), pitch:'A4', beat:1.5, dur:.5, voice:1},
+];
+let ties = [];
+const info = {
+  quarter:['Quarter Note','Duration: 1 beat. Click the staff to place a clear beat.'],
+  eighth:['Eighth Note','Duration: 1/2 beat. Neighboring eighths automatically turn flags into beams.'],
+  half:['Half Note','Duration: 2 beats. Useful for longer tones and simple melodies.'],
+  whole:['Whole Note','Duration: 4 beats. Fills a whole 4/4 measure.'],
+  rest:['Rest','Creates silent time. Rests do not need to appear for every empty spot.'],
+  tie:['Tie','Click two notes of the same pitch to connect their sound, even across barlines.'],
+  harmony:['Harmony Mode','Click above or below existing notes to add stacked notes for chords or part writing.'],
+  erase:['Erase','Click a note or rest to remove it.']
+};
+const yFor = {B4:98,A4:106,G4:114};
+const freq = {G4:392,A4:440,B4:493.88};
+let audio;
+
+function el(name, attrs={}, parent=svg){const e=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);parent.appendChild(e);return e;}
+function clear(){svg.innerHTML='';}
+function updateBubble(){bubble.innerHTML=`<h2>${info[tool][0]}</h2><p>${info[tool][1]}</p>`;}
+function beatToX(b){return startX + b*beatW;}
+function xToBeat(x){let b = Math.max(0, Math.min(15.5, Math.round(((x-startX)/beatW)*2)/2)); return b;}
+function nearestPitch(y){return Object.entries(yFor).sort((a,b)=>Math.abs(a[1]-y)-Math.abs(b[1]-y))[0][0];}
+function durForTool(){return tool==='eighth'?.5:tool==='quarter'?1:tool==='half'?2:tool==='whole'?4:1;}
+function playPitch(p,dur=.22){if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)(); const o=audio.createOscillator(), g=audio.createGain(); o.type='sine'; o.frequency.value=freq[p]||440; g.gain.setValueAtTime(.001,audio.currentTime); g.gain.exponentialRampToValueAtTime(.18,audio.currentTime+.015); g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur); o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+dur+.03);}
+function drawStaff(){
+  el('text',{x:30,y:150,'font-size':72,fill:'#111827'},svg).textContent='𝄞';
+  for(let m=0;m<4;m++){
+    const mx=left+m*measureW;
+    for(let i=0;i<5;i++) el('line',{x1:mx,x2:mx+measureW,y1:staffTop+i*gap,y2:staffTop+i*gap,class:'staff-line'});
+    el('line',{x1:mx,y1:staffTop,x2:mx,y2:staffTop+4*gap,class:'measure-line'});
+    for(let b=1;b<4;b++) el('line',{x1:mx+b*beatW,y1:staffTop-10,x2:mx+b*beatW,y2:staffTop+4*gap+10,stroke:'#e2e8f0','stroke-width':1});
+  }
+  el('line',{x1:left+4*measureW,y1:staffTop,x2:left+4*measureW,y2:staffTop+4*gap,class:'measure-line'});
+  cursor = el('line',{x1:startX,y1:staffTop-38,x2:startX,y2:staffTop+4*gap+38,class:'cursor'});
+}
+function drawNote(n){
+  const x=beatToX(n.beat), y=n.rest?staffTop+2*gap:yFor[n.pitch];
+  const g=el('g',{'data-id':n.id});
+  if(n.rest){el('text',{x:x-8,y:y+8,class:'rest'},g).textContent='𝄽';return;}
+  el('ellipse',{cx:x,cy:y,rx:13,ry:9,transform:`rotate(-18 ${x} ${y})`,class:`notehead ${n.dur>=2?'half':''}`},g);
+  if(n.dur<4) el('line',{x1:x+12,y1:y,x2:x+12,y2:y-58,class:'stemline'},g);
+  if(n.dur===.5 && !isBeamed(n)) el('path',{d:`M ${x+12} ${y-58} q 22 10 10 28`,class:'flag'},g);
+  if(document.getElementById('noteNames').checked) el('text',{x:x-8,y:y+42,'font-size':14,fill:'#64748b','font-weight':800},g).textContent=n.pitch[0];
+}
+function isBeamed(n){return notes.some(o=>!o.rest&&o.id!==n.id&&o.dur===.5&&n.dur===.5&&Math.floor(o.beat)===Math.floor(n.beat)&&Math.abs(o.beat-n.beat)===.5);}
+function drawBeams(){
+  for(let whole=0; whole<16; whole++){
+    const group=notes.filter(n=>!n.rest&&n.dur===.5&&Math.floor(n.beat)===whole).sort((a,b)=>a.beat-b.beat);
+    if(group.length>=2){
+      for(let i=0;i<group.length-1;i++){
+        if(Math.abs(group[i+1].beat-group[i].beat)===.5){
+          const x1=beatToX(group[i].beat)+12, x2=beatToX(group[i+1].beat)+12;
+          const y1=yFor[group[i].pitch]-58, y2=yFor[group[i+1].pitch]-58;
+          el('line',{x1,y1,x2,y2,class:'beam'});
+        }
+      }
+    }
+  }
+}
+function drawTies(){
+  ties.forEach(([a,b])=>{const n1=notes.find(n=>n.id===a),n2=notes.find(n=>n.id===b); if(!n1||!n2)return; const x1=beatToX(n1.beat)+16, x2=beatToX(n2.beat)-16, y=yFor[n1.pitch]+18; el('path',{d:`M ${x1} ${y} Q ${(x1+x2)/2} ${y+22} ${x2} ${y}`,class:'tie'});});
+}
+function render(){clear();drawStaff();notes.forEach(drawNote);drawBeams();drawTies();}
+function addAt(evt){
+  const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY; const loc=pt.matrixTransform(svg.getScreenCTM().inverse());
+  const target=evt.target.closest('[data-id]');
+  if(target){
+    const n=notes.find(x=>x.id===target.dataset.id);
+    if(tool==='erase'){notes=notes.filter(x=>x.id!==n.id);ties=ties.filter(t=>!t.includes(n.id));render();return;}
+    if(tool==='tie' && n && !n.rest){ if(!selectedForTie){selectedForTie=n.id; bubble.innerHTML='<h2>Tie selected</h2><p>Now click the matching note to complete the tie.</p>'; } else { const first=notes.find(x=>x.id===selectedForTie); if(first&&first.pitch===n.pitch&&first.id!==n.id) ties.push([first.id,n.id]); selectedForTie=null; updateBubble(); render(); } return; }
+  }
+  if(loc.y<staffTop-50||loc.y>staffTop+120) return;
+  const b=xToBeat(loc.x);
+  const newNote={id:crypto.randomUUID(), beat:b, dur:durForTool(), voice:tool==='harmony'?2:1};
+  if(tool==='rest') newNote.rest=true; else newNote.pitch=nearestPitch(loc.y);
+  notes = notes.filter(n=>!(n.beat===b && n.voice===newNote.voice && tool!=='harmony'));
+  notes.push(newNote); notes.sort((a,b)=>a.beat-b.beat);
+  render();
+  if(!newNote.rest && document.getElementById('autoplay').checked) playPitch(newNote.pitch);
+}
+async function play(){
+  if(playing)return; playing=true; cursor.classList.add('playing'); if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();
+  const tempo=Number(document.getElementById('tempo').value), beatMs=60000/tempo;
+  const endBeat=Math.max(4,...notes.map(n=>n.beat+n.dur)); const start=performance.now();
+  const played=new Set();
+  function frame(now){
+    if(!playing)return; const b=(now-start)/beatMs; const x=beatToX(Math.min(b,endBeat)); cursor.setAttribute('x1',x); cursor.setAttribute('x2',x);
+    notes.forEach(n=>{if(!n.rest && !played.has(n.id) && b>=n.beat){played.add(n.id); playPitch(n.pitch, Math.min(.45,n.dur*beatMs/1000*.75));}});
+    if(b<endBeat+.2) requestAnimationFrame(frame); else stop();
+  }
+  requestAnimationFrame(frame);
+}
+function stop(){playing=false; if(cursor){cursor.classList.remove('playing');cursor.setAttribute('x1',startX);cursor.setAttribute('x2',startX);}}
+
+document.getElementById('toolGrid').addEventListener('click',e=>{if(e.target.dataset.tool){tool=e.target.dataset.tool;document.querySelectorAll('#toolGrid button').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));updateBubble();}});
+document.querySelectorAll('.pitch').forEach(b=>b.onclick=()=>{pitch=b.dataset.pitch;document.querySelectorAll('.pitch').forEach(x=>x.classList.toggle('active',x===b));});
+document.getElementById('gearBtn').onclick=()=>document.getElementById('settings').classList.toggle('open');
+document.getElementById('playBtn').onclick=play;document.getElementById('stopBtn').onclick=stop;
+svg.addEventListener('click',addAt);
+render(); updateBubble();
+</script>
+</body>
+</html>
